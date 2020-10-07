@@ -57,9 +57,9 @@ public class FormulaJInternalFrame extends JInternalFrame {
 
     private void ajustarComponentes(Container container) {
         JPanel pane = new JPanel(new GridBagLayout());
-
+        
         GridBagConstraints c = new GridBagConstraints();
-
+        
         c.anchor = GridBagConstraints.FIRST_LINE_START;
         c.weightx = 1;
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -77,7 +77,7 @@ public class FormulaJInternalFrame extends JInternalFrame {
         c.weightx = 0.25;
         c.gridx = 0;
         c.gridy = 2;
-
+        
         JPanel paneCanonica = new JPanel(new BorderLayout());
         paneCanonica.setBorder(BorderFactory.createTitledBorder("Forma Canónica"));
         
@@ -93,7 +93,7 @@ public class FormulaJInternalFrame extends JInternalFrame {
         
         jScrollPane1.setViewportView(tbVerdad);
         pane.add(jScrollPane1,c);
-
+        
         container.add(pane);
     }
     

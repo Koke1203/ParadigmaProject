@@ -65,8 +65,16 @@ public class ControladorInternal implements ActionListener {
         //letra del abecedario
         for (int i = 0; i < formula.length(); i++) {
             if (Character.isLetter(formula.charAt(i)) || formula.charAt(i) == '¬') {
-                if (esDuplicado(operandos, formula.charAt(i))) {
+                if (formula.charAt(i) == '¬') {
                     operandos += formula.charAt(i);
+                } else {
+                    if (i > 1) { //si solo hay un digito no es necesario ir a revisar si está repetido
+                        if (esDuplicado(operandos, formula.charAt(i))) {
+                            operandos += formula.charAt(i);
+                        } else if (operandos.charAt(operandos.length() - 1) == '¬') {
+                            operandos = operandos.subSequence(0, operandos.length() - 1).toString();
+                        }
+                    }
                 }
             }
         }
@@ -76,44 +84,45 @@ public class ControladorInternal implements ActionListener {
     public void escuchaVerificar(String formula) {
         //se llama al metodo para obtener los operandos
         if (esExpresion(formula.replaceAll("\\s", ""))) {
+            String formula_division = dividirExpresionOperandos(formula);
             int j = 0;
-            for (int x = 0; x < dividirExpresionOperandos(formula).length(); x++) {
-                if (dividirExpresionOperandos(formula).charAt(x) == '¬') {
+            for (int x = 0; x < formula_division.length(); x++) {
+                if (formula_division.charAt(x) == '¬') {
                     j++;
                 }
             }
 
-            int aux = dividirExpresionOperandos(formula).length() + 1 - j;
+            int aux = formula_division.length() + 1 - j;
             String variables[] = new String[aux];
             j = 0; //mantener posiciones del vector
 
             variables[aux - 1] = "f(";
 
             //ARREGLAR
-            for (int i = 0; i < dividirExpresionOperandos(formula).length(); i++) {
-                if (dividirExpresionOperandos(formula).charAt(i) == '¬') {
+            for (int i = 0; i < formula_division.length(); i++) {
+                if (formula_division.charAt(i) == '¬') {
                     variables[j] = "¬";
-                    variables[j] += dividirExpresionOperandos(formula).charAt(i + 1);
+                    variables[j] += formula_division.charAt(i + 1);
                     i++;
                 } else {
-                    variables[j] = dividirExpresionOperandos(formula).charAt(i) + "";
+                    variables[j] = formula_division.charAt(i) + "";
                 }
 
                 //ir concantenando la ultima columna, donde se evalua la expresion
                 if (j == (aux - 1)) {
                     variables[aux - 1] += ")";
                 } else {
-                    if(variables[j].charAt(0)=='¬'){
-                        variables[aux - 1] += "¬"+dividirExpresionOperandos(formula).charAt(i) + ", ";
-                    }else{
-                        if(j==(aux-2)){
-                            variables[aux - 1] += dividirExpresionOperandos(formula).charAt(i);
-                        }else{
-                            variables[aux - 1] += dividirExpresionOperandos(formula).charAt(i) + ", ";
+                    if (variables[j].charAt(0) == '¬') {
+                        variables[aux - 1] += "¬" + formula_division.charAt(i) + ", ";
+                    } else {
+                        if (j == (aux - 2)) {
+                            variables[aux - 1] += formula_division.charAt(i);
+                        } else {
+                            variables[aux - 1] += formula_division.charAt(i) + ", ";
                         }
                     }
                 }
-                
+
                 j++;
             }
             variables[aux - 1] += ")";
@@ -153,31 +162,33 @@ public class ControladorInternal implements ActionListener {
             //reglas operador
             for (int i = 0; i < formula.length() - 2; i++) {
                 //operador: operando,operador,operando || operando,operador,parentesis || parentesis,operador,operando
-                if ((Character.isLetter(formula.charAt(i)) && esOperador(formula.charAt(i + 1))
-                        && Character.isLetter(formula.charAt(i + 2))) || (esOperador(formula.charAt(i))
-                        && Character.isLetter(formula.charAt(i + 1)) && esOperador(formula.charAt(i)))
-                        || (("" + formula.charAt(i)).equals("(") && Character.isLetter(formula.charAt(i + 1))
-                        && esOperador(formula.charAt(i + 2))) || (esOperador(formula.charAt(i))
-                        && Character.isLetter(formula.charAt(i + 1)) && ("" + formula.charAt(i + 2)).equals(")"))
-                        || (Character.isLetter(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals(")")
-                        && ("" + formula.charAt(i + 2)).equals(")")) || (Character.isLetter(formula.charAt(i))
-                        && esOperador(formula.charAt(i + 1)) && ("" + formula.charAt(i + 2)).equals(")"))
-                        || (esOperador(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals("(")
-                        && Character.isLetter(formula.charAt(i + 2))) || (Character.isLetter(formula.charAt(i))
-                        && esOperador(formula.charAt(i + 1)) && ("" + formula.charAt(i + 2)).equals("("))
-                        || (Character.isLetter(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals("-")
-                        && ("" + formula.charAt(i + 2)).equals(">")) || (("" + formula.charAt(i)).equals(")")
-                        && ("" + formula.charAt(i + 1)).equals("-") && ("" + formula.charAt(i + 2)).equals(">"))
-                        || (("" + formula.charAt(i)).equals("-") && ("" + formula.charAt(i + 1)).equals(">")
-                        && Character.isLetter(formula.charAt(i + 2))) || (("" + formula.charAt(i)).equals("-")
-                        && ("" + formula.charAt(i + 1)).equals(">") && ("" + formula.charAt(i + 2)).equals("("))
-                        || (("" + formula.charAt(i)).equals(")") && ("" + formula.charAt(i + 1)).equals(")")
-                        && ("" + formula.charAt(i + 2)).equals("-")) || (("" + formula.charAt(i)).equals("(")
-                        && ("" + formula.charAt(i + 1)).equals("¬") && Character.isLetter(formula.charAt(i + 2)))
-                        || (("" + formula.charAt(i)).equals("¬") && Character.isLetter(formula.charAt(i + 1))
-                        && esOperador(formula.charAt(i + 2))) || (("" + formula.charAt(i)).equals("¬") && (("" + formula.charAt(i + 1)).equals("("))
-                        && Character.isLetter(formula.charAt(i + 2)))) {
+                if ((Character.isLetter(formula.charAt(i)) && esOperador(formula.charAt(i + 1)) && Character.isLetter(formula.charAt(i + 2)))
+                        || (esOperador(formula.charAt(i)) && Character.isLetter(formula.charAt(i + 1)) && esOperador(formula.charAt(i)))
+                        || (("" + formula.charAt(i)).equals("(") && Character.isLetter(formula.charAt(i + 1)) && esOperador(formula.charAt(i + 2)))
+                        || (esOperador(formula.charAt(i)) && Character.isLetter(formula.charAt(i + 1)) && ("" + formula.charAt(i + 2)).equals(")"))
+                        || (Character.isLetter(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals(")") && ("" + formula.charAt(i + 2)).equals(")"))
+                        || (Character.isLetter(formula.charAt(i)) && esOperador(formula.charAt(i + 1)) && ("" + formula.charAt(i + 2)).equals("("))
+                        || (esOperador(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals("(") && Character.isLetter(formula.charAt(i + 2)))
+                        || (Character.isLetter(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals("-") && ("" + formula.charAt(i + 2)).equals(">"))
+                        || (("" + formula.charAt(i)).equals(")") && ("" + formula.charAt(i + 1)).equals("-") && ("" + formula.charAt(i + 2)).equals(">"))
+                        || (("" + formula.charAt(i)).equals("-") && ("" + formula.charAt(i + 1)).equals(">") && Character.isLetter(formula.charAt(i + 2)))
+                        || (("" + formula.charAt(i)).equals("-") && ("" + formula.charAt(i + 1)).equals(">") && ("" + formula.charAt(i + 2)).equals("("))
+                        || (("" + formula.charAt(i)).equals(")") && ("" + formula.charAt(i + 1)).equals(")") && ("" + formula.charAt(i + 2)).equals("-"))
+                        || (("" + formula.charAt(i)).equals("(") && ("" + formula.charAt(i + 1)).equals("¬") && Character.isLetter(formula.charAt(i + 2)))
+                        || (("" + formula.charAt(i)).equals("¬") && Character.isLetter(formula.charAt(i + 1)) && esOperador(formula.charAt(i + 2)))
+                        || (("" + formula.charAt(i)).equals("¬") && (("" + formula.charAt(i + 1)).equals("(")) && Character.isLetter(formula.charAt(i + 2)))
+                        || (Character.isLetter(formula.charAt(i)) && (("" + formula.charAt(i + 1)).equals(")")) && ("" + formula.charAt(i + 2)).equals("-"))
+                        || (("" + formula.charAt(i)).equals(">") && (("" + formula.charAt(i + 1)).equals("(")) && Character.isLetter(formula.charAt(i + 2)))
+                        || ((("" + formula.charAt(i)).equals(")")) && esOperador(formula.charAt(i + 1)) && Character.isLetter(formula.charAt(i + 2)))
+                        || (Character.isLetter(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals(")") && esOperador(formula.charAt(i + 2)))
+                        || (("" + formula.charAt(i)).equals(")") && ("" + formula.charAt(i + 1)).equals(")") && esOperador(formula.charAt(i + 2)))
+                        || (("" + formula.charAt(i)).equals(")") && esOperador(formula.charAt(i + 1)) && ("" + formula.charAt(i + 2)).equals("("))
+                        || (Character.isLetter(formula.charAt(i)) && esOperador(formula.charAt(i + 1)) && ("" + formula.charAt(i + 2)).equals("¬"))
+                        || (esOperador(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals("¬") && Character.isLetter(formula.charAt(i + 2)))
+                        || (esOperador(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals("(") && ("" + formula.charAt(i + 2)).equals("¬"))
+                        || (("" + formula.charAt(i)).equals(">") && ("" + formula.charAt(i + 1)).equals("(") && ("" + formula.charAt(i + 2)).equals("¬"))) {
                     retorno = true;
+                    
                 } else {
                     retorno = false;
                     return retorno;
@@ -194,7 +205,7 @@ public class ControladorInternal implements ActionListener {
 
         return retorno;
     }
-    
+
     public boolean esOperador(char c) {
         if (c == '+' || c == '-' || c == '*' || c == '/' || c == '∨' || c == '∧') {
             return true;
@@ -202,24 +213,27 @@ public class ControladorInternal implements ActionListener {
             return false;
         }
     }
-    
+
     //funcion que evita que hayan duplicados en el encabezado de la tabla
     public boolean esDuplicado(String formula, char operando) {
         boolean retorno = true;
         for (int i = 0; i < formula.length(); i++) {
-            if (operando != '¬') {
-                if (i > 0) { //diferenciamos ¬a y a, se toman como variables diferentes
-                    if (formula.charAt(i) == operando && formula.charAt(i - 1) == '¬' && formula.charAt(formula.length() - 1) == '¬') {
-                        retorno = false;
-                    }
-                } else {
-                    if (formula.charAt(i) == operando) {
-                        retorno = false;
-                    }
+            if (i > 0) { //diferenciamos ¬a y a, se toman como variables diferentes
+                if (formula.charAt(i) == operando && formula.charAt(i - 1) == '¬' && formula.charAt(formula.length() - 1) == '¬') {
+                    retorno = false;
+                    return retorno;
+                } else if (formula.charAt(i) == operando && formula.charAt(i - 1) != '¬' && formula.charAt(formula.length() - 1) != '¬') {
+                    retorno = false;
+                    return retorno;
+                }
+            } else {
+                if (formula.charAt(i) == operando && formula.charAt(formula.length() - 1) != '¬') {
+                    retorno = false;
+                    return retorno;
                 }
             }
         }
         return retorno;
     }
-
+    
 }
