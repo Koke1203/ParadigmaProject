@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 package Principal;
+
 import Vista.Vista;
 import javax.swing.UIManager;
 

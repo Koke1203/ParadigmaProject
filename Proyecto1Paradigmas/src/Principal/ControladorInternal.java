@@ -61,7 +61,7 @@ public class ControladorInternal implements ActionListener {
         //para pintar en la tabla los operandos (encabezado)
         //(p * (q + r)) -> s, se tiene que tomar en cuenta que ¬x != x
         String operandos = "";
-        //recorremos todo la cadena caracter por caracter y vamos preguntando si es una  
+        //recorremos todo la cadena caracter por caracter y vamos preguntando si es una
         //letra del abecedario
         for (int i = 0; i < formula.length(); i++) {
             if (Character.isLetter(formula.charAt(i)) || formula.charAt(i) == '¬') {
@@ -72,8 +72,11 @@ public class ControladorInternal implements ActionListener {
                         if (esDuplicado(operandos, formula.charAt(i))) {
                             operandos += formula.charAt(i);
                         } else if (operandos.charAt(operandos.length() - 1) == '¬') {
+                            System.out.println("Entrando");
                             operandos = operandos.subSequence(0, operandos.length() - 1).toString();
                         }
+                    } else {
+                        operandos += formula.charAt(i);
                     }
                 }
             }
@@ -126,14 +129,16 @@ public class ControladorInternal implements ActionListener {
                 j++;
             }
             variables[aux - 1] += ")";
+            String tablaVerdad[][] = obtenerTablaDeVerdad(variables.length - 1);
+            //String matriz[][] = new String[3][3];
 
+            //Encabezado de la tabla
             internal.tbVerdad.setModel(
                     new javax.swing.table.DefaultTableModel(
-                            new Object[][]{
-                                {null, null, null, null}
-                            },
+                            tablaVerdad,
                             variables
                     ));
+
         } else {
             JOptionPane.showMessageDialog(null, "Debe digitar una expresion válida");
         }
@@ -188,7 +193,7 @@ public class ControladorInternal implements ActionListener {
                         || (esOperador(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals("(") && ("" + formula.charAt(i + 2)).equals("¬"))
                         || (("" + formula.charAt(i)).equals(">") && ("" + formula.charAt(i + 1)).equals("(") && ("" + formula.charAt(i + 2)).equals("¬"))) {
                     retorno = true;
-                    
+
                 } else {
                     retorno = false;
                     return retorno;
@@ -235,5 +240,18 @@ public class ControladorInternal implements ActionListener {
         }
         return retorno;
     }
-    
+
+    private String[][] obtenerTablaDeVerdad(int n) {
+        int filas = (int) Math.pow(2, n);
+        String tablaVerdad[][];
+        tablaVerdad = new String[filas][n];
+
+        for (int i = 0; i < filas; i++) {
+            for (int j = n - 1; j >= 0; j--) {
+                tablaVerdad[i][j] = (((i / (int) Math.pow(2, j)) % 2) == 1) + "";
+            }
+        }
+        return tablaVerdad;
+    }
+
 }
