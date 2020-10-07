@@ -5,17 +5,23 @@
  */
 package Vista;
 
+import Datos.Archivo;
+import Principal.ControladorInternal;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDesktopPane;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import static javax.swing.JFrame.EXIT_ON_CLOSE;
 import javax.swing.JInternalFrame;
@@ -40,15 +46,15 @@ public class Vista extends JFrame {
     private JMenu menuAyuda;
 
     //Herramientas
-    private JToolBar toolBar;
-    private JButton btnNuevo;
-    private JButton btnAbrir;
-    private JButton btnGuardar;
-    private JButton btnImprimir;
-    private JButton btnBuscar;
+    public JToolBar toolBar;
+    public JButton btnNuevo;
+    public JButton btnAbrir;
+    public JButton btnGuardar;
+    public JButton btnImprimir;
+    public JButton btnBuscar;
 
     //JDesktopPane
-    private JDesktopPane desktopPane;
+    public JDesktopPane desktopPane;
 
     public Vista() {
         super("Editor de fórmulas");
@@ -62,6 +68,7 @@ public class Vista extends JFrame {
         setResizable(true);
         setMinimumSize(new Dimension(1200, 900));
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        pack();
     }
 
     private void ajustarComponentes(Container container) {
@@ -74,10 +81,10 @@ public class Vista extends JFrame {
 
         desktopPane = new JDesktopPane();
 
-        desktopPane.add(new FormulaJInternalFrame());
-        desktopPane.add(new FormulaJInternalFrame());
+        desktopPane.add(new ControladorInternal(false).internal);
+        desktopPane.add(new ControladorInternal(false).internal);
+        desktopPane.add(new ControladorInternal(false).internal);
         container.add(BorderLayout.CENTER, desktopPane);
-
     }
 
     private void ajustarBarraHerramientas() {

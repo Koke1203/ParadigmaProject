@@ -4,8 +4,6 @@
  * and open the template in the editor.
  */
 package Principal;
-
-import Vista.JDPEditorFormulas;
 import Vista.Vista;
 import javax.swing.UIManager;
 
@@ -21,9 +19,6 @@ public class Principal {
         } catch (Exception e) {
             System.out.println(e);
         }
-
-        Vista vista = new Vista();
-        vista.setVisible(true);
-
+        new ControladorVista();
     }
 }
