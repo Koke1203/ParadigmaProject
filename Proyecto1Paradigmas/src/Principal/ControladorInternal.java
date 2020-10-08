@@ -24,24 +24,35 @@ import javax.swing.JPanel;
 public class ControladorInternal implements ActionListener {
 
     public FormulaJInternalFrame internal = new FormulaJInternalFrame();
+    public boolean archivo_abierto = false;  //para saber si ya abrimos un archivo
+
+    JFileChooser seleccionar = new JFileChooser();
+    File archivo;
+    Archivo archivo_clase = new Archivo();
 
     public ControladorInternal(boolean nuevo) {
         if (nuevo) {
             //cada vez que se abre un txt se genera un internal frame nuevo
             JFileChooser fc = new JFileChooser();
             fc.showOpenDialog(null);
-            File archivo = fc.getSelectedFile();
+            File archivo_nuevo = fc.getSelectedFile();
             String formula = "";
             try {
                 Archivo archivo_clase = new Archivo();
-                formula = archivo_clase.leerArchivo(archivo);
+                formula = archivo_clase.leerArchivo(archivo_nuevo);
                 internal.txtExpresion.setText(formula);
+                //se actualiza porque ya se abrió un archivo
+                archivo = archivo_nuevo;
+                seleccionar = fc;
+                archivo_abierto = true;
+                //
                 System.out.println("Archivo leido correctamente");
             } catch (Exception ee) {
                 System.out.println("Problemas al leer el archivo");
             }
         }
         internal.btnVerificar.addActionListener(this);
+        internal.btnGuardar.addActionListener(this);
     }
 
     @Override
@@ -53,6 +64,33 @@ public class ControladorInternal implements ActionListener {
                 JOptionPane.showMessageDialog(null, "Debe digitar una expresion válida");
             }
             System.out.println("Escuchando boton verificar");
+        } else if (e.getSource() == internal.btnGuardar) {
+            if (!internal.txtExpresion.getText().isEmpty()) {
+                btnGuardarArchivo();
+            } else {
+                JOptionPane.showMessageDialog(null, "No hay información para guardar");
+            }
+        }
+    }
+
+    private void btnGuardarArchivo() {
+        String documento = "";
+        if (archivo_abierto) {
+            documento = internal.txtExpresion.getText();
+            archivo_clase.guardarArchivo(archivo, documento);
+        } else {
+            if (seleccionar.showDialog(null, "Guardar") == JFileChooser.APPROVE_OPTION) {
+                archivo = seleccionar.getSelectedFile();
+                if (!archivo.getName().endsWith("txt")) {
+                    archivo = new File(archivo.toString() + ".txt");
+                }
+                documento = internal.txtExpresion.getText();
+                archivo_clase.guardarArchivo(archivo, documento);
+                System.out.println("Archivo Guardado");
+                archivo_abierto=true;
+            } else {
+                JOptionPane.showMessageDialog(null, "No se guardó");
+            }
         }
     }
 
@@ -76,15 +114,15 @@ public class ControladorInternal implements ActionListener {
         }
         return operandos;
     }
-    
+
     public void escuchaVerificar(String formula) {
         //se llama al metodo para obtener los operandos
         if (esExpresion(formula.replaceAll("\\s", ""))) {
             String formula_division = dividirExpresionOperandos(formula);
-            
+
             int aux = formula_division.length() + 1;
             String variables[] = new String[aux];
-            
+
             variables[aux - 1] = "f(";
             for (int i = 0; i < formula_division.length(); i++) {
                 variables[i] = formula_division.charAt(i) + "";
@@ -99,22 +137,22 @@ public class ControladorInternal implements ActionListener {
                     }
                 }
             }
-            
+
             variables[aux - 1] += ")";
             String tablaVerdad[][] = obtenerTablaDeVerdad(variables.length - 1);
-            
+
             //Encabezado de la tabla
             internal.tbVerdad.setModel(
                     new javax.swing.table.DefaultTableModel(
                             tablaVerdad,
                             variables
                     ));
-            
+
         } else {
             JOptionPane.showMessageDialog(null, "Debe digitar una expresion válida");
         }
     }
-    
+
     //Se verifica que la expresion sea correcta
     //Balance de parentesis
     //operandor: operando,operador,operando || operando,operador,parentesis || parentesis,operador,operando
@@ -123,7 +161,7 @@ public class ControladorInternal implements ActionListener {
         //contadores
         int apertura_parentesis = 0;
         int clausura_parentesis = 0;
-        
+
         //Balance de parentesis
         for (int i = 0; i < formula.length(); i++) {
             if (formula.charAt(i) == '(') {
@@ -164,7 +202,7 @@ public class ControladorInternal implements ActionListener {
                         || (esOperador(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals("(") && ("" + formula.charAt(i + 2)).equals("¬"))
                         || (("" + formula.charAt(i)).equals(">") && ("" + formula.charAt(i + 1)).equals("(") && ("" + formula.charAt(i + 2)).equals("¬"))
                         || (("" + formula.charAt(i)).equals("¬") && Character.isLetter(formula.charAt(i + 1)) && ("" + formula.charAt(i + 2)).equals(")"))
-                        || (("" + formula.charAt(i)).equals(">") && Character.isLetter(formula.charAt(i+1)) && esOperador(formula.charAt(i+2)) ) ) {
+                        || (("" + formula.charAt(i)).equals(">") && Character.isLetter(formula.charAt(i + 1)) && esOperador(formula.charAt(i + 2)))) {
                     retorno = true;
                     /*  */
                 } else {

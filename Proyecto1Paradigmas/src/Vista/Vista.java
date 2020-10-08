@@ -35,13 +35,13 @@ public class Vista extends JFrame {
     private JMenu menuVentana;
     private JMenu menuAyuda;
 
-    //Herramientas
+//    //Herramientas
     public JToolBar toolBar;
-    public JButton btnNuevo;
+//    public JButton btnNuevo;
     public JButton btnAbrir;
-    public JButton btnGuardar;
-    public JButton btnImprimir;
-    public JButton btnBuscar;
+//    public JButton btnGuardar;
+//    public JButton btnImprimir;
+//    public JButton btnBuscar;
 
     //JDesktopPane
     public JDesktopPane desktopPane;
@@ -79,26 +79,26 @@ public class Vista extends JFrame {
 
     private void ajustarBarraHerramientas() {
         toolBar = new JToolBar();
-        btnNuevo = new JButton();
+       // btnNuevo = new JButton();
         btnAbrir = new JButton();
-        btnGuardar = new JButton();
-        btnImprimir = new JButton();
-        btnBuscar = new JButton();
+      //  btnGuardar = new JButton();
+     //   btnImprimir = new JButton();
+      //  btnBuscar = new JButton();
         try {
-            btnNuevo.setIcon(new ImageIcon(getClass().getResource("../Recursos/nuevo.png")));
+        //    btnNuevo.setIcon(new ImageIcon(getClass().getResource("../Recursos/nuevo.png")));
             btnAbrir.setIcon(new ImageIcon(getClass().getResource("../Recursos/abrir.png")));
-            btnGuardar.setIcon(new ImageIcon(getClass().getResource("../Recursos/guardar.png")));
-            btnImprimir.setIcon(new ImageIcon(getClass().getResource("../Recursos/imprimir.png")));
-            btnBuscar.setIcon(new ImageIcon(getClass().getResource("../Recursos/buscar.png")));
+         //   btnGuardar.setIcon(new ImageIcon(getClass().getResource("../Recursos/guardar.png")));
+        //    btnImprimir.setIcon(new ImageIcon(getClass().getResource("../Recursos/imprimir.png")));
+         //   btnBuscar.setIcon(new ImageIcon(getClass().getResource("../Recursos/buscar.png")));
         } catch (Exception ex) {
 
         }
 
-        toolBar.add(btnNuevo);
+    //    toolBar.add(btnNuevo);
         toolBar.add(btnAbrir);
-        toolBar.add(btnGuardar);
-        toolBar.add(btnImprimir);
-        toolBar.add(btnBuscar);
+     //   toolBar.add(btnGuardar);
+     //   toolBar.add(btnImprimir);
+      //  toolBar.add(btnBuscar);
     }
 
     private void ajustarMenus() {

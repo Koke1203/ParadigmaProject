@@ -11,6 +11,8 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.Toolkit;
 import javafx.scene.layout.Pane;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -22,6 +24,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JToolBar;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -40,6 +43,15 @@ public class FormulaJInternalFrame extends JInternalFrame {
     public JTable tbVerdad;
     public DefaultTableModel modelo;
     public JScrollPane jScrollPane1;
+    
+    //Herramientas
+    public JToolBar toolBar;
+    public JButton btnNuevo;
+   // public JButton btnAbrir;
+    public JButton btnGuardar;
+    public JButton btnImprimir;
+    public JButton btnBuscar;
+    
 
     public FormulaJInternalFrame() {
         //Resizable, closable, maximizable, iconifiable
@@ -49,7 +61,7 @@ public class FormulaJInternalFrame extends JInternalFrame {
 
         setFrameIcon(new ImageIcon(getClass().getResource("../Recursos/icon.png")));
         //Eje x, eje y, ancho, altura
-        setBounds(x, y, 670, 470);
+        setBounds(x, y, 715, 515);
         x += x + 5;
         y += y + 5;
         setVisible(true);
@@ -60,6 +72,10 @@ public class FormulaJInternalFrame extends JInternalFrame {
         
         GridBagConstraints c = new GridBagConstraints();
         
+        //herramientas
+        ajustarBarraHerramientas();
+        container.add(BorderLayout.NORTH, toolBar);
+        //
         c.anchor = GridBagConstraints.FIRST_LINE_START;
         c.weightx = 1;
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -95,6 +111,30 @@ public class FormulaJInternalFrame extends JInternalFrame {
         pane.add(jScrollPane1,c);
         
         container.add(pane);
+    }
+    
+    private void ajustarBarraHerramientas() {
+        toolBar = new JToolBar();
+        btnNuevo = new JButton();
+     //   btnAbrir = new JButton();
+        btnGuardar = new JButton();
+        btnImprimir = new JButton();
+        btnBuscar = new JButton();
+        try {
+            btnNuevo.setIcon(new ImageIcon(getClass().getResource("../Recursos/nuevo.png")));
+       //     btnAbrir.setIcon(new ImageIcon(getClass().getResource("../Recursos/abrir.png")));
+            btnGuardar.setIcon(new ImageIcon(getClass().getResource("../Recursos/guardar.png")));
+            btnImprimir.setIcon(new ImageIcon(getClass().getResource("../Recursos/imprimir.png")));
+            btnBuscar.setIcon(new ImageIcon(getClass().getResource("../Recursos/buscar.png")));
+        } catch (Exception ex) {
+
+        }
+
+        toolBar.add(btnNuevo);
+     //   toolBar.add(btnAbrir);
+        toolBar.add(btnGuardar);
+        toolBar.add(btnImprimir);
+        toolBar.add(btnBuscar);
     }
     
 }

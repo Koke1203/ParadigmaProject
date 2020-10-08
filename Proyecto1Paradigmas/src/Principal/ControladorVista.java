@@ -31,7 +31,7 @@ public class ControladorVista implements ActionListener {
         
         vista.setVisible(true);
     }
-
+    
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == vista.btnAbrir) {

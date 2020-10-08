@@ -10,6 +10,7 @@ import java.io.PrintWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.BufferedReader;
+import java.io.FileOutputStream;
 
 /**
  *
@@ -17,9 +18,6 @@ import java.io.BufferedReader;
  */
 public class Archivo {
 
-    FileWriter archivo;
-    PrintWriter pw;
-    File archivoLeido;
     FileReader fr;
     BufferedReader br;
 
@@ -33,7 +31,7 @@ public class Archivo {
             fr = new FileReader(archivo);
             br = new BufferedReader(fr);
             while ((linea = br.readLine()) != null) {
-                informacion += linea ;
+                informacion += linea;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -50,4 +48,14 @@ public class Archivo {
         return informacion;
     }
 
+    public void guardarArchivo(File archivo, String documento) {
+        FileOutputStream salida;
+        try {
+            salida = new FileOutputStream(archivo);
+            byte[] bytxt = documento.getBytes();
+            salida.write(bytxt);
+        } catch (Exception ee) {
+        }
+    }
+    
 }
