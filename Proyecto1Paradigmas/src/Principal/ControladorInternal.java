@@ -76,15 +76,15 @@ public class ControladorInternal implements ActionListener {
         }
         return operandos;
     }
-
+    
     public void escuchaVerificar(String formula) {
         //se llama al metodo para obtener los operandos
         if (esExpresion(formula.replaceAll("\\s", ""))) {
             String formula_division = dividirExpresionOperandos(formula);
-
+            
             int aux = formula_division.length() + 1;
             String variables[] = new String[aux];
-
+            
             variables[aux - 1] = "f(";
             for (int i = 0; i < formula_division.length(); i++) {
                 variables[i] = formula_division.charAt(i) + "";
@@ -99,22 +99,22 @@ public class ControladorInternal implements ActionListener {
                     }
                 }
             }
-
+            
             variables[aux - 1] += ")";
             String tablaVerdad[][] = obtenerTablaDeVerdad(variables.length - 1);
-
+            
             //Encabezado de la tabla
             internal.tbVerdad.setModel(
                     new javax.swing.table.DefaultTableModel(
                             tablaVerdad,
                             variables
                     ));
-
+            
         } else {
             JOptionPane.showMessageDialog(null, "Debe digitar una expresion válida");
         }
     }
-
+    
     //Se verifica que la expresion sea correcta
     //Balance de parentesis
     //operandor: operando,operador,operando || operando,operador,parentesis || parentesis,operador,operando
@@ -123,7 +123,7 @@ public class ControladorInternal implements ActionListener {
         //contadores
         int apertura_parentesis = 0;
         int clausura_parentesis = 0;
-
+        
         //Balance de parentesis
         for (int i = 0; i < formula.length(); i++) {
             if (formula.charAt(i) == '(') {
@@ -163,9 +163,10 @@ public class ControladorInternal implements ActionListener {
                         || (esOperador(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals("¬") && Character.isLetter(formula.charAt(i + 2)))
                         || (esOperador(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals("(") && ("" + formula.charAt(i + 2)).equals("¬"))
                         || (("" + formula.charAt(i)).equals(">") && ("" + formula.charAt(i + 1)).equals("(") && ("" + formula.charAt(i + 2)).equals("¬"))
-                        || (("" + formula.charAt(i)).equals("¬") && Character.isLetter(formula.charAt(i + 1)) && ("" + formula.charAt(i + 2)).equals(")"))) {
+                        || (("" + formula.charAt(i)).equals("¬") && Character.isLetter(formula.charAt(i + 1)) && ("" + formula.charAt(i + 2)).equals(")"))
+                        || (("" + formula.charAt(i)).equals(">") && Character.isLetter(formula.charAt(i+1)) && esOperador(formula.charAt(i+2)) ) ) {
                     retorno = true;
-                    /* */
+                    /*  */
                 } else {
                     retorno = false;
                     return retorno;
