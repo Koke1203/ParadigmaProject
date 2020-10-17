@@ -6,31 +6,37 @@
 package Principal;
 
 import Datos.Archivo;
+import Logica.Canonica;
+//import Logica.Expresion;
+import Logica.Tabla;
 import Vista.FormulaJInternalFrame;
-import Vista.Vista;
-import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 
 /**
  *
  * @author Joan Corea
  */
 public class ControladorInternal implements ActionListener {
-
+    
     public FormulaJInternalFrame internal = new FormulaJInternalFrame();
     public boolean archivo_abierto = false;  //para saber si ya abrimos un archivo
-
+    
     JFileChooser seleccionar = new JFileChooser();
     File archivo;
     Archivo archivo_clase = new Archivo();
-
+    String variables[];
+    Expresion objeto_expresion;
+    Canonica canonica;
+    Tabla tabla;
+    
     public ControladorInternal(boolean nuevo) {
+        objeto_expresion = new Expresion();
+        tabla = new Tabla();
+        canonica = new Canonica();
         if (nuevo) {
             //cada vez que se abre un txt se genera un internal frame nuevo
             JFileChooser fc = new JFileChooser();
@@ -54,7 +60,7 @@ public class ControladorInternal implements ActionListener {
         internal.btnVerificar.addActionListener(this);
         internal.btnGuardar.addActionListener(this);
     }
-
+    
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == internal.btnVerificar) {
@@ -66,14 +72,14 @@ public class ControladorInternal implements ActionListener {
             System.out.println("Escuchando boton verificar");
         } else if (e.getSource() == internal.btnGuardar) {
             if (!internal.txtExpresion.getText().isEmpty()) {
-                btnGuardarArchivo();
+                escuchaGuardarArchivo();
             } else {
                 JOptionPane.showMessageDialog(null, "No hay información para guardar");
             }
         }
     }
-
-    private void btnGuardarArchivo() {
+    
+    private void escuchaGuardarArchivo() {
         String documento = "";
         if (archivo_abierto) {
             documento = internal.txtExpresion.getText();
@@ -87,42 +93,23 @@ public class ControladorInternal implements ActionListener {
                 documento = internal.txtExpresion.getText();
                 archivo_clase.guardarArchivo(archivo, documento);
                 System.out.println("Archivo Guardado");
-                archivo_abierto=true;
+                archivo_abierto = true;
             } else {
                 JOptionPane.showMessageDialog(null, "No se guardó");
             }
         }
     }
-
-    public String dividirExpresionOperandos(String formula) {
-        //cuando se presione el boton verificar se llama a este metodo
-        //para pintar en la tabla los operandos (encabezado)
-        //(p * (q + r)) -> s, se tiene que tomar en cuenta que ¬x != x
-        String operandos = "";
-        //recorremos todo la cadena caracter por caracter y vamos preguntando si es una
-        //letra del abecedario
-        for (int i = 0; i < formula.length(); i++) {
-            if (Character.isLetter(formula.charAt(i))) {
-                if (i > 1) { //si solo hay un digito no es necesario ir a revisar si está repetido
-                    if (esDuplicado(operandos, formula.charAt(i))) {
-                        operandos += formula.charAt(i);
-                    }
-                } else {
-                    operandos += formula.charAt(i);
-                }
-            }
-        }
-        return operandos;
-    }
-
+    
     public void escuchaVerificar(String formula) {
         //se llama al metodo para obtener los operandos
-        if (esExpresion(formula.replaceAll("\\s", ""))) {
-            String formula_division = dividirExpresionOperandos(formula);
-
+        if (objeto_expresion.esExpresion(formula.replaceAll("\\s", ""))) {
+            //JOptionPane.showMessageDialog(null, "TODO BIEN");
+            String resultado_evaluacion="";
+            String formula_division = objeto_expresion.dividirExpresionOperandos(formula);
+            
             int aux = formula_division.length() + 1;
-            String variables[] = new String[aux];
-
+            variables = new String[aux];
+            
             variables[aux - 1] = "f(";
             for (int i = 0; i < formula_division.length(); i++) {
                 variables[i] = formula_division.charAt(i) + "";
@@ -137,122 +124,40 @@ public class ControladorInternal implements ActionListener {
                     }
                 }
             }
-
+            
             variables[aux - 1] += ")";
-            String tablaVerdad[][] = obtenerTablaDeVerdad(variables.length - 1);
-
+            
+            System.out.println(variables.length-1);
+            String tablaVerdad[][] = tabla.obtenerTablaDeVerdad(variables.length-1);
+            
+            //modificar tabla de verdad y ponerle la ultima columna como el resultado 
+            //que nos devuelve el metodo resultadoEvaluacion de la clase Expresion 
+            //recibe por parametro la tabla y una expresion
+            //El resultado viene separado por ','s (comas)
+            resultado_evaluacion = objeto_expresion.resultadoEvaluacion(tablaVerdad, formula);
+            //concatenar este resultado como un vector a la ultima columna de la tabla
+            
+            System.out.println(tablaVerdad.length);
+            
+            String columna_final[] = resultado_evaluacion.split(",");
+            for(int i=0; i<tablaVerdad.length; i++){
+                tablaVerdad[i][variables.length-1] = columna_final[i];
+            }
+            //---------------------------------------------------------------------
+            
             //Encabezado de la tabla
             internal.tbVerdad.setModel(
                     new javax.swing.table.DefaultTableModel(
                             tablaVerdad,
                             variables
                     ));
-
+            
+            //canonica.calculaDisyuntiva(tablaVerdad, variables)
+            //System.out.println(canonica.calculaDisyuntiva(tablaVerdad, variables));
+            //canonica.calculaConjuntiva(tablaVerdad, variables);
         } else {
             JOptionPane.showMessageDialog(null, "Debe digitar una expresion válida");
         }
     }
-
-    //Se verifica que la expresion sea correcta
-    //Balance de parentesis
-    //operandor: operando,operador,operando || operando,operador,parentesis || parentesis,operador,operando
-    public boolean esExpresion(String formula) {
-        boolean retorno = true;
-        //contadores
-        int apertura_parentesis = 0;
-        int clausura_parentesis = 0;
-
-        //Balance de parentesis
-        for (int i = 0; i < formula.length(); i++) {
-            if (formula.charAt(i) == '(') {
-                apertura_parentesis++;
-            } else if (formula.charAt(i) == ')') {
-                clausura_parentesis++;
-            }
-        }
-
-        //si los parentesis estan balanceados proceda
-        if (apertura_parentesis == clausura_parentesis && formula.length() > 2) {
-            //reglas operador
-            for (int i = 0; i < formula.length() - 2; i++) {
-                //operador: operando,operador,operando || operando,operador,parentesis || parentesis,operador,operando
-                if ((Character.isLetter(formula.charAt(i)) && esOperador(formula.charAt(i + 1)) && Character.isLetter(formula.charAt(i + 2)))
-                        || (esOperador(formula.charAt(i)) && Character.isLetter(formula.charAt(i + 1)) && esOperador(formula.charAt(i)))
-                        || (("" + formula.charAt(i)).equals("(") && Character.isLetter(formula.charAt(i + 1)) && esOperador(formula.charAt(i + 2)))
-                        || (esOperador(formula.charAt(i)) && Character.isLetter(formula.charAt(i + 1)) && ("" + formula.charAt(i + 2)).equals(")"))
-                        || (Character.isLetter(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals(")") && ("" + formula.charAt(i + 2)).equals(")"))
-                        || (Character.isLetter(formula.charAt(i)) && esOperador(formula.charAt(i + 1)) && ("" + formula.charAt(i + 2)).equals("("))
-                        || (esOperador(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals("(") && Character.isLetter(formula.charAt(i + 2)))
-                        || (Character.isLetter(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals("-") && ("" + formula.charAt(i + 2)).equals(">"))
-                        || (("" + formula.charAt(i)).equals(")") && ("" + formula.charAt(i + 1)).equals("-") && ("" + formula.charAt(i + 2)).equals(">"))
-                        || (("" + formula.charAt(i)).equals("-") && ("" + formula.charAt(i + 1)).equals(">") && Character.isLetter(formula.charAt(i + 2)))
-                        || (("" + formula.charAt(i)).equals("-") && ("" + formula.charAt(i + 1)).equals(">") && ("" + formula.charAt(i + 2)).equals("("))
-                        || (("" + formula.charAt(i)).equals(")") && ("" + formula.charAt(i + 1)).equals(")") && ("" + formula.charAt(i + 2)).equals("-"))
-                        || (("" + formula.charAt(i)).equals("(") && ("" + formula.charAt(i + 1)).equals("¬") && Character.isLetter(formula.charAt(i + 2)))
-                        || (("" + formula.charAt(i)).equals("¬") && Character.isLetter(formula.charAt(i + 1)) && esOperador(formula.charAt(i + 2)))
-                        || (("" + formula.charAt(i)).equals("¬") && (("" + formula.charAt(i + 1)).equals("(")) && Character.isLetter(formula.charAt(i + 2)))
-                        || (Character.isLetter(formula.charAt(i)) && (("" + formula.charAt(i + 1)).equals(")")) && ("" + formula.charAt(i + 2)).equals("-"))
-                        || (("" + formula.charAt(i)).equals(">") && (("" + formula.charAt(i + 1)).equals("(")) && Character.isLetter(formula.charAt(i + 2)))
-                        || ((("" + formula.charAt(i)).equals(")")) && esOperador(formula.charAt(i + 1)) && Character.isLetter(formula.charAt(i + 2)))
-                        || (Character.isLetter(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals(")") && esOperador(formula.charAt(i + 2)))
-                        || (("" + formula.charAt(i)).equals(")") && ("" + formula.charAt(i + 1)).equals(")") && esOperador(formula.charAt(i + 2)))
-                        || (("" + formula.charAt(i)).equals(")") && esOperador(formula.charAt(i + 1)) && ("" + formula.charAt(i + 2)).equals("("))
-                        || (Character.isLetter(formula.charAt(i)) && esOperador(formula.charAt(i + 1)) && ("" + formula.charAt(i + 2)).equals("¬"))
-                        || (esOperador(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals("¬") && Character.isLetter(formula.charAt(i + 2)))
-                        || (esOperador(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals("(") && ("" + formula.charAt(i + 2)).equals("¬"))
-                        || (("" + formula.charAt(i)).equals(">") && ("" + formula.charAt(i + 1)).equals("(") && ("" + formula.charAt(i + 2)).equals("¬"))
-                        || (("" + formula.charAt(i)).equals("¬") && Character.isLetter(formula.charAt(i + 1)) && ("" + formula.charAt(i + 2)).equals(")"))
-                        || (("" + formula.charAt(i)).equals(">") && Character.isLetter(formula.charAt(i + 1)) && esOperador(formula.charAt(i + 2)))) {
-                    retorno = true;
-                    /*  */
-                } else {
-                    retorno = false;
-                    return retorno;
-                }
-            }
-            //no puede terminar con un operador
-            if (esOperador(formula.charAt(formula.length() - 1)) || esOperador(formula.charAt(0))) {
-                retorno = false;
-            }
-
-        } else {
-            retorno = false;
-        }
-
-        return retorno;
-    }
-
-    public boolean esOperador(char c) {
-        if (c == '+' || c == '-' || c == '*' || c == '/' || c == '∨' || c == '∧') {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    //funcion que evita que hayan duplicados en el encabezado de la tabla
-    public boolean esDuplicado(String formula, char operando) {
-        boolean retorno = true;
-        for (int i = 0; i < formula.length(); i++) {
-            if (formula.charAt(i) == operando) {
-                retorno = false;
-                return retorno;
-            }
-        }
-        return retorno;
-    }
-
-    private String[][] obtenerTablaDeVerdad(int n) {
-        int filas = (int) Math.pow(2, n);
-        String tablaVerdad[][];
-        tablaVerdad = new String[filas][n];
-
-        for (int i = 0; i < filas; i++) {
-            for (int j = n - 1; j >= 0; j--) {
-                tablaVerdad[i][j] = (((i / (int) Math.pow(2, j)) % 2) == 1) + "";
-            }
-        }
-        return tablaVerdad;
-    }
-
+    
 }

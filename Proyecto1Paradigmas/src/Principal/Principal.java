@@ -21,6 +21,6 @@ public class Principal {
             System.out.println(e);
         }
         new ControladorVista();
-        
     }
+        
 }
