@@ -8,6 +8,7 @@ package Principal;
 import Datos.Archivo;
 import Logica.Canonica;
 import Logica.Expresion;
+import Logica.Simplificacion;
 import Logica.Tabla;
 import Vista.FormulaJInternalFrame;
 import java.awt.event.ActionEvent;
@@ -32,11 +33,13 @@ public class ControladorInternal implements ActionListener {
     Expresion objeto_expresion;
     Canonica canonica;
     Tabla tabla;
+    Simplificacion simplificacion; 
     
     public ControladorInternal(boolean nuevo) {
         objeto_expresion = new Expresion();
         tabla = new Tabla();
         canonica = new Canonica();
+        simplificacion = new Simplificacion();
         if (nuevo) {
             //cada vez que se abre un txt se genera un internal frame nuevo
             JFileChooser fc = new JFileChooser();
@@ -153,15 +156,23 @@ public class ControladorInternal implements ActionListener {
                             variables
                     ));
             
-            for(int i=0; i<variables.length; i++){
-                System.out.println(variables[i]);
-            }
+            
+            //SE CALCULAN LAS CANONICAS
+            internal.txtArea.append("\n");
             internal.txtArea.append("Disyuntiva: ");
             internal.txtArea.append(canonica.calculaDisyuntiva(tablaVerdad, variables));
             internal.txtArea.append("\n");
             internal.txtArea.append("\n");
             internal.txtArea.append("Conjuntiva: ");
             internal.txtArea.append(canonica.calculaConjuntiva(tablaVerdad, variables));
+            
+            
+            //SE REALIZA LA SIMPLIFICACION
+            internal.txtArea.append("\n");
+            internal.txtArea.append("\n");
+            internal.txtArea.append("Simplificacion: ");
+            internal.txtArea.append(simplificacion.aplicaLeyes(internal.txtExpresion.getText().replaceAll(" ","")));
+            internal.txtArea.append("\n");
         } else {
             JOptionPane.showMessageDialog(null, "Debe digitar una expresion válida");
         }

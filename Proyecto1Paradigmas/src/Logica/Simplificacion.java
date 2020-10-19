@@ -10,10 +10,22 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Simplificacion {
-    
+
     public Simplificacion() {
     }
     
+    public String aplicaLeyes(String expresion_general){
+        String resultado = expresion_general;
+        
+        resultado = aplicaDobleNegacion(resultado);
+        resultado = aplicaDeMorgan(resultado);
+        resultado = aplicaDobleNegacion(resultado);
+        resultado = aplicaIdempotencia(resultado);
+        resultado = aplicaDistributiva(resultado);
+        resultado = aplicaAbsorcion(resultado); 
+        return resultado;
+    }
+
     //Distributiva
     public String aplicaDistributiva(String expresion_general) {
         ArrayList<String> expresion = new ArrayList<String>();
@@ -23,12 +35,12 @@ public class Simplificacion {
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(expresion_general);
         String aux = "";
-        
+
         // revisa las ocurrencias dentro del string
         while (matcher.find()) {
             expresion.add(matcher.group());
         }
-        
+
         for (int i = 0; i < expresion.size(); i++) {
             //recorremos la expresion
             String auxiliar[] = new String[expresion.get(i).length()];
@@ -41,7 +53,7 @@ public class Simplificacion {
                     auxiliar[l++] = expresion.get(i).charAt(j) + "";
                 }
             }
-            
+
             aux = expresion.get(i);
             if (expresion.get(i).matches(regex)) {
                 if (auxiliar[2].equals(auxiliar[8]) && !auxiliar[2].equals(auxiliar[5])) {
@@ -76,7 +88,6 @@ public class Simplificacion {
 
     //Absorción
     public String aplicaAbsorcion(String expresion_general) {
-
         String exp_simp = expresion_general;
         //Expresion regular para buscar match
         String regex = "¬*[a-z][∧∨][(]¬*[a-z][∧∨]¬*[a-z][)]";
@@ -160,7 +171,6 @@ public class Simplificacion {
     //Idempotencia
     public String aplicaIdempotencia(String expresion_general) {
         String resultado = expresion_general;
-        
         String regex = "[(]*¬*[a-z][)]*[∧∨][(]*¬*[a-z][)]*";
         
         Pattern pattern = Pattern.compile(regex);
@@ -168,18 +178,32 @@ public class Simplificacion {
         ArrayList<String> expresion = new ArrayList<String>();
         String aux1 = "";
         String aux2 = "";
-        String auxiliar="";
-        
+        String auxiliar = "";
+
         // revisa las ocurrencias dentro del string
         while (matcher.find()) {
             auxiliar = matcher.group();
             auxiliar = auxiliar.replace("(", "");
             auxiliar = auxiliar.replace(")", "");
-            if(auxiliar.substring(0, ((int) auxiliar.length() / 2)).equals(auxiliar.substring(((int) auxiliar.length() / 2) + 1))){
-                expresion.add( matcher.group() );
+            if (auxiliar.substring(0, ((int) auxiliar.length() / 2)).equals(auxiliar.substring(((int) auxiliar.length() / 2) + 1))) {
+                expresion.add(matcher.group());
+            } else {
+             //agarramos la ultima posicion que es una variables y la comparamos con la cadena restante 
+                //q∨p∨p = q∨p = end:2 substring(end,length) = pvp = p
+                auxiliar = resultado.substring(matcher.end() - 1, resultado.length());
+                Matcher matcher1 = pattern.matcher(auxiliar);
+                while (matcher1.find()) {
+                    auxiliar = matcher1.group();
+                    auxiliar = auxiliar.replace("(", "");
+                    auxiliar = auxiliar.replace(")", "");
+                    if (auxiliar.substring(0, ((int) auxiliar.length() / 2)).equals(auxiliar.substring(((int) auxiliar.length() / 2) + 1))) {
+                        expresion.add(matcher1.group());
+                    }
+                }
             }
+            
         }
-        
+
         auxiliar = "";
         for (int i = 0; i < expresion.size(); i++) {
             if (expresion.get(i) != null) {
@@ -190,7 +214,7 @@ public class Simplificacion {
                     aux1 = expresion.get(i).substring(0, ((int) expresion.get(i).length() / 2));
                     aux2 = expresion.get(i).substring(((int) expresion.get(i).length() / 2) + 1);
                     if (aux1.equals(aux2)) {
-                        resultado = resultado.replace( auxiliar , aux1 );
+                        resultado = resultado.replace(auxiliar, aux1);
                         expresion.set(i, resultado);
                     } else {
                         break;
@@ -198,11 +222,11 @@ public class Simplificacion {
                 }
             }
         }
-        
+
         //
-        if(expresion.isEmpty()){
+        if (expresion.isEmpty()) {
             return resultado;
-        }else{
+        } else {
             return aplicaIdempotencia(resultado);
         }
     }
@@ -234,11 +258,77 @@ public class Simplificacion {
 
         return resultado;
     }
-    
-    
+
     //De Morgan
-    //-(rvq) = -(-r^-q)
-    
-    
-    
+    //-(-r^-qv-s) = -(-r^-q);   "-(())"
+    public String aplicaDeMorgan(String expresion_general) {
+        String resultado = expresion_general;
+        int index = 0;
+        int cont_aper = 0;
+        int cont_cla = 0;
+        for (int k = 0; k < resultado.length() - 1; k++) {
+
+            if (resultado.charAt(k) == '¬' && resultado.charAt(k + 1) == '(') {
+                index = resultado.indexOf("¬(");
+                cont_aper++;
+                resultado = resultado.substring(0, index)
+                        + resultado.substring(index + 1, resultado.length());
+                index += 1;
+                for (int i = index; i < resultado.length(); i++) {
+                    while (cont_aper != cont_cla) {
+                        if (resultado.charAt(i) == '(') {
+                            cont_aper++;
+                        } else if (resultado.charAt(i) == ')') {
+                            cont_cla++;
+                        }
+
+                        //vamos poniendo los negativos
+                        if (Character.isLetter(resultado.charAt(i))) {
+                            resultado = addChar(resultado, '¬', i);
+                            i++;
+                            //resultado = resultado.substring(0, i) + "¬" + resultado.substring(i, resultado.length());
+                        } else if (isOperator(resultado.charAt(i))) {
+                            if (resultado.charAt(i) == '∧') {
+                                resultado = replaceChar(resultado, '∨', i);
+                                //resultado = resultado.substring(0, i - 1) + "∨" + resultado.substring(i + 1, resultado.length());
+                            } else {
+                                resultado = replaceChar(resultado, '∧', i);
+                                //resultado = resultado.substring(0, i) + "∧" + resultado.substring(i + 1, resultado.length());
+                            }
+                        }
+                        k++;
+                        i++;
+                    }
+                    i = resultado.length();
+                }
+            }
+
+        }
+
+        return resultado;
+    }
+
+    public String replaceChar(String str, char ch, int position) {
+        char[] charArray = str.toCharArray();
+        charArray[position] = ch;
+        return new String(charArray);
+    }
+
+    public String addChar(String str, char ch, int position) {
+        int len = str.length();
+        char[] updatedArr = new char[len + 1];
+        str.getChars(0, position, updatedArr, 0);
+        updatedArr[position] = ch;
+        str.getChars(position, len, updatedArr, position + 1);
+        return new String(updatedArr);
+    }
+
+    public boolean isOperator(char c) {
+        if (c == '+' || c == '-' || c == '*' || c == '/' || c == '∨' || c == '∧') {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }
