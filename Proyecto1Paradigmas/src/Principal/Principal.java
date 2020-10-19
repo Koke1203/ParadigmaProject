@@ -5,8 +5,10 @@
  */
 package Principal;
 
+import Logica.Simplificacion;
 import Vista.Vista;
-import javax.swing.UIManager;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -15,12 +17,17 @@ import javax.swing.UIManager;
 public class Principal {
 
     public static void main(String[] args) {
-        try {
+        /*try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
         } catch (Exception e) {
             System.out.println(e);
         }
-        new ControladorVista();
+        new ControladorVista();*/
+        
+        Simplificacion sim = new Simplificacion();
+        
+        System.out.println(sim.esDistributiva("((¬m∨¬n)∧(¬m∨s))∧r∧((t∨w)∧(l∨w))"));
+        
     }
         
 }

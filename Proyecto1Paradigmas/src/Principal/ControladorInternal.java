@@ -7,7 +7,7 @@ package Principal;
 
 import Datos.Archivo;
 import Logica.Canonica;
-//import Logica.Expresion;
+import Logica.Expresion;
 import Logica.Tabla;
 import Vista.FormulaJInternalFrame;
 import java.awt.event.ActionEvent;
@@ -65,6 +65,7 @@ public class ControladorInternal implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == internal.btnVerificar) {
             if (!internal.txtExpresion.getText().isEmpty()) {
+                internal.txtArea.setText("");
                 escuchaVerificar(internal.txtExpresion.getText());
             } else {
                 JOptionPane.showMessageDialog(null, "Debe digitar una expresion válida");
@@ -134,7 +135,7 @@ public class ControladorInternal implements ActionListener {
             //que nos devuelve el metodo resultadoEvaluacion de la clase Expresion 
             //recibe por parametro la tabla y una expresion
             //El resultado viene separado por ','s (comas)
-            resultado_evaluacion = objeto_expresion.resultadoEvaluacion(tablaVerdad, formula);
+            resultado_evaluacion = objeto_expresion.resultadoEvaluacion(tablaVerdad, formula, formula_division);
             //concatenar este resultado como un vector a la ultima columna de la tabla
             
             System.out.println(tablaVerdad.length);
@@ -152,9 +153,15 @@ public class ControladorInternal implements ActionListener {
                             variables
                     ));
             
-            //canonica.calculaDisyuntiva(tablaVerdad, variables)
-            //System.out.println(canonica.calculaDisyuntiva(tablaVerdad, variables));
-            //canonica.calculaConjuntiva(tablaVerdad, variables);
+            for(int i=0; i<variables.length; i++){
+                System.out.println(variables[i]);
+            }
+            internal.txtArea.append("Disyuntiva: ");
+            internal.txtArea.append(canonica.calculaDisyuntiva(tablaVerdad, variables));
+            internal.txtArea.append("\n");
+            internal.txtArea.append("\n");
+            internal.txtArea.append("Conjuntiva: ");
+            internal.txtArea.append(canonica.calculaConjuntiva(tablaVerdad, variables));
         } else {
             JOptionPane.showMessageDialog(null, "Debe digitar una expresion válida");
         }

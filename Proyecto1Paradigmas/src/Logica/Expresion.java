@@ -3,8 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package Logica;
+
 import java.util.Stack;
 
 /**
@@ -12,34 +12,33 @@ import java.util.Stack;
  * @author Joan Corea
  */
 public class Expresion {
-    
-    public Expresion(){}
-    
-    
-    
-    
+
+    public Expresion() {
+    }
+
     //METODO GLOBAL PARA LA EVALUACION
-    public String resultadoEvaluacion(String[][] tabla, String expresion){
+    public String resultadoEvaluacion(String[][] tabla, String expresion, String variables) {
         String resultado_final = "";
+        char[] encabezado = new char[variables.length()];
+        for (int i = 0; i < variables.length(); i++) {
+            encabezado[i] = variables.charAt(i);
+        }
         //verifico si en la expresion se encuentra un implica 
-        if(expresion.contains("->")){
+        if (expresion.contains("->")) {
             int pos = expresion.indexOf("->");
-            if(expresion.charAt(pos-1)=='<'){  //es doble implicacion
-                resultado_final = casoImplicacion(tabla,expresion);
-            }else{ //es simple implicacion
-                resultado_final = casoDobleImplicacion(tabla,expresion);
+            if (expresion.charAt(pos - 1) == '<') {  //es doble implicacion
+                resultado_final = casoImplicacion(tabla, expresion, encabezado);
+            } else { //es simple implicacion
+                resultado_final = casoDobleImplicacion(tabla, expresion, encabezado);
             }
-        }else{ // no tiene implicacion
+        } else { // no tiene implicacion
             for (int i = 0; i < tabla.length; i++) {
-                resultado_final += evaluarExpresion(i, tabla, expresion);
+                resultado_final += evaluarExpresion(i, tabla, expresion, encabezado);
             }
         }
         return resultado_final;
     }
-    
-    
-    
-    
+
     //VALIDACION
     public String dividirExpresionOperandos(String formula) {
         //cuando se presione el boton verificar se llama a este metodo
@@ -111,7 +110,15 @@ public class Expresion {
                         || (esOperador(formula.charAt(i)) && ("" + formula.charAt(i + 1)).equals("(") && ("" + formula.charAt(i + 2)).equals("¬"))
                         || (("" + formula.charAt(i)).equals(">") && ("" + formula.charAt(i + 1)).equals("(") && ("" + formula.charAt(i + 2)).equals("¬"))
                         || (("" + formula.charAt(i)).equals("¬") && Character.isLetter(formula.charAt(i + 1)) && ("" + formula.charAt(i + 2)).equals(")"))
-                        || (("" + formula.charAt(i)).equals(">") && Character.isLetter(formula.charAt(i + 1)) && esOperador(formula.charAt(i + 2)))) {
+                        || (("" + formula.charAt(i)).equals(">") && Character.isLetter(formula.charAt(i + 1)) && esOperador(formula.charAt(i + 2)))
+                        || (esOperador(formula.charAt(i))) && ("" + formula.charAt(i + 1)).equals("¬") && (("" + formula.charAt(i + 2)).equals("¬"))
+                        || ("" + formula.charAt(i)).equals("¬") && ("" + formula.charAt(i + 1)).equals("¬") && (("" + formula.charAt(i + 2)).equals("¬"))
+                        || (Character.isLetter(formula.charAt(i + 2)) && ("" + formula.charAt(i + 1)).equals("¬") && ("" + formula.charAt(i)).equals("¬"))
+                        || (("" + formula.charAt(i)).equals("(") && ("" + formula.charAt(i + 1)).equals("¬") && (("" + formula.charAt(i + 2)).equals("¬")))
+                        || (("" + formula.charAt(i)).equals("¬") && ("" + formula.charAt(i + 1)).equals("¬") && (("" + formula.charAt(i + 2)).equals("(")))
+                        || (("" + formula.charAt(i)).equals("¬") && ("" + formula.charAt(i + 1)).equals("(") && (("" + formula.charAt(i + 2)).equals("(")))
+                        || (("" + formula.charAt(i)).equals("(") && ("" + formula.charAt(i + 1)).equals("(") && Character.isLetter(formula.charAt(i + 2)))
+                        ) {
                     retorno = true;
                     /*  */
                 } else {
@@ -150,194 +157,234 @@ public class Expresion {
         }
         return retorno;
     }
-    
-    
-    
-    
+
     //CASO DE IMPLICACION
-    public String casoImplicacion(String[][] tabla,String expresion){
-        String aux1="";
-        String aux2="";
-        String resultado_final="";
+    public String casoImplicacion(String[][] tabla, String expresion, char[] encabezado) {
+        String aux1 = "";
+        String aux2 = "";
+        String resultado_final = "";
         String resultado_aux1 = "";
         String resultado_aux2 = "";
         int pos = expresion.indexOf("->");
-        
+
         aux1 = expresion.substring(0, pos);
-        aux2 = expresion.substring(pos+2,expresion.length()-1);
-        
+        aux2 = expresion.substring(pos + 2, expresion.length() - 1);
+
         for (int i = 0; i < tabla.length; i++) {
-            resultado_aux1 += evaluarExpresion(i, tabla, aux1);
-            resultado_aux2 += evaluarExpresion(i, tabla, aux2);
+            resultado_aux1 += evaluarExpresion(i, tabla, aux1, encabezado);
+            resultado_aux2 += evaluarExpresion(i, tabla, aux2, encabezado);
         }
-        
+
         String vector1[] = resultado_aux1.split(",");
         String vector2[] = resultado_aux2.split(",");
-        
-        for(int i=0; i<vector1.length; i++){
-            if(vector1[i].equals("true") && vector2[i].equals("false")){
-                resultado_final+="false,";
-            }else{
-                resultado_final+="true,";
+
+        for (int i = 0; i < vector1.length; i++) {
+            if (vector1[i].equals("true") && vector2[i].equals("false")) {
+                resultado_final += "false,";
+            } else {
+                resultado_final += "true,";
             }
         }
-        
+
         return resultado_final;
     }
-    
-    
-    
-    
+
     //CASO DE DOBLE IMPLICACION 
-    public String casoDobleImplicacion(String[][] tabla,String expresion){
-        String aux1="";
-        String aux2="";
-        String resultado_final="";
+    public String casoDobleImplicacion(String[][] tabla, String expresion, char[] encabezado) {
+        String aux1 = "";
+        String aux2 = "";
+        String resultado_final = "";
         String resultado_aux1 = "";
         String resultado_aux2 = "";
         int pos = expresion.indexOf("<->");
-        
+
         aux1 = expresion.substring(0, pos);
-        aux2 = expresion.substring(pos+3,expresion.length()-1);
+        aux2 = expresion.substring(pos + 3, expresion.length() - 1);
 
         for (int i = 0; i < tabla.length; i++) {
-            resultado_aux1 += evaluarExpresion(i, tabla, aux1);
-            resultado_aux2 += evaluarExpresion(i, tabla, aux2);
+            resultado_aux1 += evaluarExpresion(i, tabla, aux1, encabezado);
+            resultado_aux2 += evaluarExpresion(i, tabla, aux2, encabezado);
         }
-        
+
         String vector1[] = resultado_aux1.split(",");
         String vector2[] = resultado_aux2.split(",");
-        
-        for(int i=0; i<vector1.length; i++){
-            if((vector1[i].equals("true") && vector2[i].equals("true")) 
-                    || (vector1[i].equals("false") && vector2[i].equals("false"))){
-                resultado_final+="true,";
-            }else{
-                resultado_final+="false,";
+
+        for (int i = 0; i < vector1.length; i++) {
+            if ((vector1[i].equals("true") && vector2[i].equals("true"))
+                    || (vector1[i].equals("false") && vector2[i].equals("false"))) {
+                resultado_final += "true,";
+            } else {
+                resultado_final += "false,";
             }
         }
-        
+
         return resultado_final;
     }
-    
-    
-    
-    
+
     //PARA EVALUAR LA EXPRESION 
-    
-    public String evaluarExpresion(int pos,String[][] tabla,String expresion) {
+    public String evaluarExpresion(int pos, String[][] tabla, String expresion, char[] encabezado) {
         Stack<String> operadores = new Stack<String>();
         Stack<String> variables = new Stack<String>();
-        int j=0;
-        char[] encabezado = new char[3];
-        encabezado[0]='p';
-        encabezado[1]='q';
-        encabezado[2]='r';
-        //encabezado[3]='m';
-        String resultado="";
-        for (int i = 0; i < expresion.length(); i++) {
+        String resultado = "";
+        int cont_negativos = 0;
+        for (int i = 0; i < expresion.length() - 1; i++) {
             resultado = "";
             while (expresion.charAt(i) != ')') {
-                if (Character.isLetter(expresion.charAt(i))) {
-                    variables.push(expresion.charAt(i)+"");
-                } else {
-                    operadores.push(expresion.charAt(i)+"");
+                while (expresion.charAt(i) == '¬') {
+                    cont_negativos++;
+                    i++;
                 }
+
+                if (cont_negativos > 0) {
+                    if (Character.isLetter(expresion.charAt(i))) {
+                        if (cont_negativos % 2 == 0) {
+                            variables.push(expresion.charAt(i) + "");
+                        } else {
+                            variables.push("¬" + expresion.charAt(i));
+                        }
+                    } else {
+                        if (cont_negativos % 2 == 0) {
+                            operadores.push(expresion.charAt(i) + "");
+                        } else {
+                            operadores.push("¬");
+                            operadores.push(expresion.charAt(i) + "");
+                        }
+                    }
+                } else {
+                    if (Character.isLetter(expresion.charAt(i))) {
+                        variables.push(expresion.charAt(i) + "");
+                    } else {
+                        operadores.push(expresion.charAt(i) + "");
+                    }
+                }
+                cont_negativos = 0;
                 i++;
             }
+
             i++;
-            resultado += evaluarPilas(operadores, variables,tabla[pos],encabezado)+",";
+            resultado += evaluarPilas(operadores, variables, tabla[pos], encabezado) + ",";
         }
         //System.out.println(resultado);
         return resultado;
     }
-    
+
     public String evaluarPilas(Stack<String> operadores, Stack<String> variables, String[] fila, char[] encabezado) {
         //Stack
         char operador;
         String var1;
         String var2;
-        String valor_variable1="";
-        String valor_variable2="";
+        String valor_variable1 = "";
+        String valor_variable2 = "";
         String valor_final = "";
         char vector[] = divisionOperadoresLogicos(operadores);
-        
+        boolean negativo = false;
+
         for (int i = 0; i < vector.length; i++) {
-            operador = vector[i];
-            var1 = variables.pop();
-            var2 = variables.pop();
-            
-            //validamos la primera variable
-            if(var1.equals("1")){
-                valor_variable1 = "true";
-            }else if(var1.equals("0")){
-                valor_variable1 = "false";
-            }else{
-                valor_variable1 = fila[retornaPosicionVariable(var1,encabezado)];
-            }
-            //validamos la segunda variable
-            if(var2.equals("1")){
-                valor_variable2 = "true";
-            }else if(var2.equals("0")){
-                valor_variable2 = "false";
-            }else{
-                valor_variable2 = fila[retornaPosicionVariable(var2,encabezado)];
-            }
-            
-            if(operador=='∧'){
-                if(valor_variable1.equals("true") && valor_variable2.equals("true")){
-                    valor_final="true";
-                    variables.push("1");
-                }else{
-                    valor_final="false";
-                    variables.push("0");
+            if (vector[i] != '¬') {
+                operador = vector[i];
+                var1 = variables.pop();
+                var2 = variables.pop();
+
+                //validamos la primera variable
+                if (var1.equals("1")) {
+                    valor_variable1 = "true";
+                } else if (var1.equals("0")) {
+                    valor_variable1 = "false";
+                } else {
+                    if (var1.charAt(0) == '¬') {
+                        if (fila[retornaPosicionVariable(var1.charAt(1) + "", encabezado)].equals("true")) {
+                            valor_variable1 = "false";
+                        } else {
+                            valor_variable1 = "true";
+                        }
+                    } else {
+                        valor_variable1 = fila[retornaPosicionVariable(var1, encabezado)];
+                    }
+                }
+
+                //validamos la segunda variable
+                if (var2.equals("1")) {
+                    valor_variable2 = "true";
+                } else if (var2.equals("0")) {
+                    valor_variable2 = "false";
+                } else {
+                    if (var2.charAt(0) == '¬') {
+                        if (fila[retornaPosicionVariable(var2.charAt(1) + "", encabezado)].equals("true")) {
+                            valor_variable2 = "false";
+                        } else {
+                            valor_variable2 = "true";
+                        }
+                    } else {
+                        valor_variable2 = fila[retornaPosicionVariable(var2, encabezado)];
+                    }
+                }
+
+                if (operador == '∧') {
+                    if (valor_variable1.equals("true") && valor_variable2.equals("true")) {
+                        valor_final = "true";
+                        variables.push("1");
+                    } else {
+                        valor_final = "false";
+                        variables.push("0");
+                    }
+                } else {
+                    if (valor_variable1.equals("false") && valor_variable2.equals("false")) {
+                        valor_final = "false";
+                        variables.push("0");
+                    } else {
+                        valor_final = "true";
+                        variables.push("1");
+                    }
                 }
             }else{
-                if(valor_variable1.equals("false")&&valor_variable2.equals("false")){
-                    valor_final="false";
-                    variables.push("0");
-                }else{
-                    valor_final="true";
-                    variables.push("1");
-                }
+                negativo = true;
             }
         }
-        return valor_final;
+        
+        if(negativo){
+            if(valor_final.equals("true")){
+                return "false";
+            }else{
+                return "true";
+            }
+        }else{
+            return valor_final;
+        }
     }
     
     public char[] divisionOperadoresLogicos(Stack<String> operadores) {
         //cantidad de operadores
-        char vector[] = new char[cantidadOperadores(operadores)]; 
+        char vector[] = new char[cantidadOperadores(operadores)];
         String var;
-        int cont=0;
+        int cont = 0;
         while (!operadores.isEmpty()) {
             var = (String) operadores.pop();
-            if (var.equals("∧") || var.equals("∨")) {
-                vector[cont++]=var.charAt(0);
+            if (var.equals("∧") || var.equals("∨") || var.equals("¬")) {
+                vector[cont++] = var.charAt(0);
             }
         }
         return vector;
     }
-    
-    public int cantidadOperadores(Stack<String> operadores){
-        int cont=0;
+
+    public int cantidadOperadores(Stack<String> operadores) {
+        int cont = 0;
         Object[] arr = operadores.toArray();
-        for(int i=0; i<arr.length; i++){
-            if(arr[i].equals("∧") || arr[i].equals("∨")){
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i].equals("∧") || arr[i].equals("∨") || arr[i].equals("¬")) {
                 cont++;
             }
         }
         return cont;
     }
-    
-    public int retornaPosicionVariable(String var, char[] encabezado){
+
+    public int retornaPosicionVariable(String var, char[] encabezado) {
         int pos = 0;
-        for(int i=0; i<encabezado.length; i++){
-            if((encabezado[i]+"").equals(var)){
-                return pos=i;
+        for (int i = 0; i < encabezado.length; i++) {
+            if ((encabezado[i] + "").equals(var)) {
+                return pos = i;
             }
         }
         return pos;
     }
-    
+
 }
