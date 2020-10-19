@@ -26,8 +26,8 @@ public class Principal {
         
         Simplificacion sim = new Simplificacion();
         
-        System.out.println(sim.esDistributiva("((¬m∨¬n)∧(¬m∨s))∧r∧((t∨w)∧(l∨w))"));
-        
+        System.out.println(sim.aplicaDistributiva("(p∨q)∧(p∨l)"));
+        //¬(abbbbba¬c
     }
         
 }
