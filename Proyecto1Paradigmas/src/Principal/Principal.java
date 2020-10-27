@@ -10,7 +10,11 @@ import javax.swing.UIManager;
 
 /**
  *
- * @author groya
+ * Integrantes:
+ * Jorge Canales Espinoza
+ * Roy Arias Sandoval
+ * Joan Corea Aguilar
+ * 
  */
 public class Principal {
 

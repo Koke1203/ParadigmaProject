@@ -34,18 +34,14 @@ public class Vista extends JFrame {
     private JMenu menuHerramientas;
     private JMenu menuVentana;
     private JMenu menuAyuda;
-
+    
 //    //Herramientas
     public JToolBar toolBar;
-//    public JButton btnNuevo;
     public JButton btnAbrir;
-//    public JButton btnGuardar;
-//    public JButton btnImprimir;
-//    public JButton btnBuscar;
 
     //JDesktopPane
     public JDesktopPane desktopPane;
-
+    
     public Vista() {
         super("Editor de fórmulas");
         configurarVista();
@@ -71,34 +67,32 @@ public class Vista extends JFrame {
 
         desktopPane = new JDesktopPane();
 
-        desktopPane.add(new ControladorInternal(false).internal);
-        desktopPane.add(new ControladorInternal(false).internal);
-        desktopPane.add(new ControladorInternal(false).internal);
+        //CREAMOS LOS TRES INTERNALS QUE SE LEVANTAN CUANDO SE EJECUTA EL PROGRAMA
+        ControladorInternal internal1 = new ControladorInternal(false);
+        internal1.internal.txtExpresion.setText("(p∧q)∨(p∧r)∨(q∧r)");
+
+        ControladorInternal internal2 = new ControladorInternal(false);
+        internal2.internal.txtExpresion.setText("¬(p ∧ q ∧ r)∧(¬¬¬q ∧ r)");
+
+        ControladorInternal internal3 = new ControladorInternal(false);
+        internal3.internal.txtExpresion.setText("¬¬¬(p ∧ q ∧ r)");
+
+        desktopPane.add(internal1.internal);
+        desktopPane.add(internal2.internal);
+        desktopPane.add(internal3.internal);
         container.add(BorderLayout.CENTER, desktopPane);
     }
 
     private void ajustarBarraHerramientas() {
         toolBar = new JToolBar();
-       // btnNuevo = new JButton();
         btnAbrir = new JButton();
-      //  btnGuardar = new JButton();
-     //   btnImprimir = new JButton();
-      //  btnBuscar = new JButton();
         try {
-        //    btnNuevo.setIcon(new ImageIcon(getClass().getResource("../Recursos/nuevo.png")));
             btnAbrir.setIcon(new ImageIcon(getClass().getResource("../Recursos/abrir.png")));
-         //   btnGuardar.setIcon(new ImageIcon(getClass().getResource("../Recursos/guardar.png")));
-        //    btnImprimir.setIcon(new ImageIcon(getClass().getResource("../Recursos/imprimir.png")));
-         //   btnBuscar.setIcon(new ImageIcon(getClass().getResource("../Recursos/buscar.png")));
         } catch (Exception ex) {
 
         }
 
-    //    toolBar.add(btnNuevo);
         toolBar.add(btnAbrir);
-     //   toolBar.add(btnGuardar);
-     //   toolBar.add(btnImprimir);
-      //  toolBar.add(btnBuscar);
     }
 
     private void ajustarMenus() {
